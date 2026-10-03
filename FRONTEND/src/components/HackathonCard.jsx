@@ -1,0 +1,33 @@
+import { Link } from "react-router-dom";
+import StatusBadge from "./StatusBadge";
+
+function formatDate(date) {
+    if (!date) {
+        return "TBA";
+    }
+    return new Date(date).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+function HackathonCard({ hackathon }) {
+    return (
+        <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-2">
+            <div className="flex items-start justify-between gap-2">
+                <h3 className="text-lg font-semibold">{hackathon.title}</h3>
+                <StatusBadge status={hackathon.status} />
+            </div>
+            <p className="text-sm text-gray-600">{hackathon.organizer}</p>
+            <p className="text-sm text-gray-500">
+                {hackathon.mode} • {formatDate(hackathon.startDate)} to {formatDate(hackathon.endDate)}
+            </p>
+            <Link to={"/hackathons/" + hackathon._id} className="text-indigo-600 text-sm font-medium">
+                View details
+            </Link>
+        </div>
+    );
+}
+
+export default HackathonCard;

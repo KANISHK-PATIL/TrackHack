@@ -1,0 +1,58 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../api";
+import { useAuth } from "../context/AuthContext";
+
+function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const { saveLogin } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+
+        try {
+            const res = await api.post("/auth/login", { email, password });
+            saveLogin(res.data.token, res.data.user);
+            navigate("/dashboard");
+        } catch (err) {
+            setError(err.response?.data?.message || "Something went wrong");
+        }
+    };
+
+    return (
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow p-6">
+            <h1 className="text-2xl font-bold mb-4">Login</h1>
+            {error && <p className="text-red-600 mb-3">{error}</p>}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                    Login
+                </button>
+            </form>
+            <p className="mt-4 text-sm">
+                New here? <Link to="/register" className="text-indigo-600">Create an account</Link>
+            </p>
+        </div>
+    );
+}
+
+export default Login;

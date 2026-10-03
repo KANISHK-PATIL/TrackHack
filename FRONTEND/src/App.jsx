@@ -1,0 +1,34 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Hackathons from "./pages/Hackathons";
+import HackathonDetails from "./pages/HackathonDetails";
+import CreateHackathon from "./pages/CreateHackathon";
+import EditHackathon from "./pages/EditHackathon";
+import TrackerPage from "./pages/TrackerPage";
+
+function App() {
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Navbar />
+            <div className="max-w-5xl mx-auto px-4 py-6">
+                <Routes>
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/hackathons" element={<ProtectedRoute><Hackathons /></ProtectedRoute>} />
+                    <Route path="/hackathons/create" element={<ProtectedRoute><CreateHackathon /></ProtectedRoute>} />
+                    <Route path="/hackathons/:id" element={<ProtectedRoute><HackathonDetails /></ProtectedRoute>} />
+                    <Route path="/hackathons/:id/edit" element={<ProtectedRoute><EditHackathon /></ProtectedRoute>} />
+                    <Route path="/trackers/:id" element={<ProtectedRoute><TrackerPage /></ProtectedRoute>} />
+                </Routes>
+            </div>
+        </div>
+    );
+}
+
+export default App;

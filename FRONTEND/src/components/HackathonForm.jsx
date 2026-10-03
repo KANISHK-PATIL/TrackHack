@@ -1,0 +1,120 @@
+import { useState } from "react";
+
+const inputClass = "w-full border border-gray-300 rounded px-3 py-2";
+
+const inputFields = [
+    { name: "title", label: "Title", type: "text", required: true },
+    { name: "organizer", label: "Organizer", type: "text", required: true },
+    { name: "startDate", label: "Start Date", type: "date" },
+    { name: "endDate", label: "End Date", type: "date" },
+    { name: "registrationDeadline", label: "Registration Deadline", type: "date" },
+    { name: "location", label: "Location", type: "text" },
+    { name: "website", label: "Website (https://...)", type: "url" }
+];
+
+const modes = ["Online", "Offline", "Hybrid"];
+const statuses = ["Upcoming", "Registered", "In Progress", "Completed", "Cancelled"];
+
+function toDateInput(value) {
+    if (!value) {
+        return "";
+    }
+    return value.slice(0, 10);
+}
+
+function HackathonForm({ initialData, onSubmit, buttonText }) {
+    const data = initialData || {};
+
+    const [form, setForm] = useState({
+        title: data.title || "",
+        organizer: data.organizer || "",
+        description: data.description || "",
+        startDate: toDateInput(data.startDate),
+        endDate: toDateInput(data.endDate),
+        registrationDeadline: toDateInput(data.registrationDeadline),
+        location: data.location || "",
+        mode: data.mode || "Online",
+        status: data.status || "Upcoming",
+        website: data.website || ""
+    });
+    const [error, setError] = useState("");
+    const [saving, setSaving] = useState(false);
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        setSaving(true);
+
+        try {
+            await onSubmit(form);
+        } catch (err) {
+            setError(err.response?.data?.message || "Something went wrong");
+            setSaving(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 flex flex-col gap-4">
+            {error && <p className="text-red-600">{error}</p>}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {inputFields.map((field) => (
+                    <div key={field.name}>
+                        <label className="block text-sm font-medium mb-1">{field.label}</label>
+                        <input
+                            type={field.type}
+                            name={field.name}
+                            value={form[field.name]}
+                            onChange={handleChange}
+                            required={field.required}
+                            className={inputClass}
+                        />
+                    </div>
+                ))}
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">Mode</label>
+                    <select name="mode" value={form.mode} onChange={handleChange} className={inputClass}>
+                        {modes.map((mode) => (
+                            <option key={mode} value={mode}>{mode}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
+                        {statuses.map((status) => (
+                            <option key={status} value={status}>{status}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    rows={4}
+                    className={inputClass}
+                ></textarea>
+            </div>
+
+            <button
+                type="submit"
+                disabled={saving}
+                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+                {saving ? "Saving..." : buttonText}
+            </button>
+        </form>
+    );
+}
+
+export default HackathonForm;

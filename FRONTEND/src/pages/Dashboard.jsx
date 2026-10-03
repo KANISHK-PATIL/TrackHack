@@ -1,0 +1,98 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../api";
+import HackathonCard from "../components/HackathonCard";
+import ProgressBar from "../components/ProgressBar";
+
+function Dashboard() {
+    const [hackathons, setHackathons] = useState([]);
+    const [trackers, setTrackers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const hackathonRes = await api.get("/hackathons?mine=true");
+                const trackerRes = await api.get("/trackers");
+                setHackathons(hackathonRes.data.hackathons);
+                setTrackers(trackerRes.data.trackers.filter((tracker) => tracker.hackathon));
+            } catch (err) {
+                setError(err.response?.data?.message || "Could not load your dashboard");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, []);
+
+    const stats = [
+        { label: "Total Hackathons", value: hackathons.length },
+        { label: "Upcoming", value: hackathons.filter((h) => h.status === "Upcoming").length },
+        { label: "Ongoing", value: hackathons.filter((h) => h.status === "In Progress").length },
+        { label: "Completed", value: hackathons.filter((h) => h.status === "Completed").length }
+    ];
+
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+
+    return (
+        <div className="flex flex-col gap-8">
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+            {error && <p className="text-red-600">{error}</p>}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {stats.map((stat) => (
+                    <div key={stat.label} className="bg-white rounded-lg shadow p-4">
+                        <p className="text-3xl font-bold text-indigo-600">{stat.value}</p>
+                        <p className="text-sm text-gray-600">{stat.label}</p>
+                    </div>
+                ))}
+            </div>
+
+            <div>
+                <h2 className="text-xl font-semibold mb-3">My progress</h2>
+                {trackers.length === 0 ? (
+                    <p className="text-gray-600">
+                        No trackers yet. Open a hackathon and click "Track my progress".
+                    </p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {trackers.map((tracker) => (
+                            <Link
+                                key={tracker._id}
+                                to={"/trackers/" + tracker._id}
+                                className="bg-white rounded-lg shadow p-4 flex flex-col gap-2"
+                            >
+                                <h3 className="font-semibold">{tracker.hackathon.title}</h3>
+                                <ProgressBar tracker={tracker} />
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div>
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xl font-semibold">My hackathons</h2>
+                    <Link to="/hackathons/create" className="text-indigo-600 font-medium">
+                        + Add hackathon
+                    </Link>
+                </div>
+                {hackathons.length === 0 ? (
+                    <p className="text-gray-600">You haven't added any hackathons yet.</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {hackathons.map((hackathon) => (
+                            <HackathonCard key={hackathon._id} hackathon={hackathon} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default Dashboard;
